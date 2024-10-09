@@ -15,7 +15,7 @@ namespace Word_Analyzer
 
 		static void Main(string[] args)
 		{
-			Analyzer analyzer = new Analyzer();
+			Analyzer analyzer = new Analyzer(5);
 			analyzer.Run(null);
 		}
 	}
