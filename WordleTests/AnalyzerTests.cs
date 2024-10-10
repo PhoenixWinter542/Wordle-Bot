@@ -133,7 +133,7 @@ namespace WordleTests
 		public void ComputeTest()
 		{
 			Analyzer an = new Analyzer(5);
-			List<List<(char letter, long num)>> results = an.compute(new List<char> { 'a', 'e' });
+			List<List<(char letter, int num)>> results = an.Compute(new List<char> { 'a', 'e' });
 			
 			//e
 			Assert.AreEqual(421, results[0][1].num);

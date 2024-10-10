@@ -26,16 +26,36 @@ namespace Word_Analyzer
 		public Analyzer(short length)
 		{
 			conn = new SqlConnection(connectionString);
-			conn.Open();
-			transaction = conn.BeginTransaction();
-			cmd = conn.CreateCommand();
-			cmd.Transaction = transaction;
+			startConnection();
 			fullAlphabet = new List<char>() { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 			bannedLetters = new List<char>();
 			bannedPos = new List<(char, short)>();
 			reqPos = new List<(char, short)>();
 			reqLetters = new List<char>();
 			this.length = length;
+		}
+
+		public Analyzer(short length, string connection) : this(length)
+		{
+			connectionString = connection;
+		}
+
+		public void startConnection()
+		{
+			if (ConnectionState.Closed != conn.State)
+				return;
+			conn.Open();
+			transaction = conn.BeginTransaction();
+			cmd = conn.CreateCommand();
+			cmd.Transaction = transaction;
+		}
+
+		public void endConnection()
+		{
+			if (conn.State == ConnectionState.Closed)
+				return;
+			transaction.Rollback();
+			conn.Close();
 		}
 
 		public void Dispose()
@@ -57,6 +77,8 @@ namespace Word_Analyzer
 
 		public void UpdateLetters(List<(char, short)> feedback)
 		{
+			if (null == feedback)
+				feedback = new List<(char, short)>();
 			for (short i = 0; i < feedback.Count; i++)
 			{
 				(char letter, short status) pos = feedback[i];
@@ -136,23 +158,21 @@ namespace Word_Analyzer
 			}
 			return sum;
 		}
-		
+
 		//Compute
-		public List<List<(char, long)>> compute(List<char> alphabet)
+		public List<List<(char, int)>> Compute(List<char> alphabet)
 		{
-			List<List<(char, long)>> results = new List<List<(char, long)>>();
-			SqlDataAdapter adapter = new SqlDataAdapter("", conn);
-			adapter.SelectCommand.Transaction = transaction;
-			DataSet data = new DataSet();
+			List<List<(char, int)>> results = new List<List<(char, int)>>();
 			for (int i = 0; i < length; i++)
 			{
-				List<(char, long)> column = new List<(char, long)>();
+				List<(char, int)> column = new List<(char, int)>();
 				foreach (char letter in alphabet)
 				{
-					adapter.SelectCommand.CommandText = "SELECT count(*) FROM english.dbo.words WHERE words like " + CreateRegex(i, letter) + ";";
-					data.Clear();
-					adapter.Fill(data);
-					column.Add((letter, long.Parse(data.Tables[0].Rows[0][0].ToString())));
+					cmd.CommandText = "SELECT count(*) FROM english.dbo.words WHERE words like " + CreateRegex(i, letter) + ";";
+					SqlDataReader reader = cmd.ExecuteReader();
+					reader.Read();
+					column.Add((letter, reader.GetInt32(0)));
+					reader.Close();
 				}
 				column.Sort((x, y) => y.Item2.CompareTo(x.Item2));
 				results.Add(column);
@@ -162,8 +182,10 @@ namespace Word_Analyzer
 		}
 
 		//0 - char not in word	|	1 - char in word, not in position	|	2 - char in word, in correct position
-		public List<List<(char, long)>> Run(List<(char, short)> feedback)
+		public List<List<(char, int)>> Run(List<(char, short)> feedback)
 		{
+			startConnection();
+
 			//Create list of allowed letters
 			UpdateLetters(feedback);
 			List<char> alphabet = GetAllowed();
@@ -186,7 +208,9 @@ namespace Word_Analyzer
 			}
 
 			//Compute
-			return compute(alphabet);
+			List<List<(char, int)>> results = Compute(alphabet);
+			endConnection();
+			return results;
 		}
 
 
