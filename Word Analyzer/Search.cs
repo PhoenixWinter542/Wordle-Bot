@@ -14,14 +14,14 @@ namespace Word_Analyzer
 
 		public int CompareTo(Node other)
 		{
-			int comp = other.heur.CompareTo(heur);
+			int comp = heur.CompareTo(other.heur);
 			if (comp != 0)
 				return comp;
 
 			if (offset.SequenceEqual(other.offset))
 				return 0;
 
-			return 1;	//We don't care which node is less or greater, only if they are equal or not
+			return 1;	//We don't care which offset is less or greater, only if they are equal or not
 		}
 	}
 
@@ -31,27 +31,32 @@ namespace Word_Analyzer
 
 		public List<List<(char letter, int sum)>> letterPos;	//Tracks the number of words containing each letter for each position
 		public List<(char letter, int sum)> letterInc;   //Tracks the number of words containing each letter
-		public int heurChoice = 0;
+		public int heurChoice;
 
 		public SortedSet<Node> frontier;
 		public SortedSet<Node> closed;
 
-		public Search(List<List<(char, int)>> pos, List<(char, int)> inc)
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc) input)
 		{
-			letterPos = pos;
-			letterInc = inc;
+			heurChoice = 1;
+			letterPos = input.pos;
+			letterInc = input.inc;
 
 			frontier = new SortedSet<Node>();
 			closed = new SortedSet<Node>();
 
 			Node first = new Node();
 			first.offset = new List<short>();
-			for (int i = 0; i < pos.Count; i++)
+			for (int i = 0; i < input.pos.Count; i++)
 			{
 				first.offset.Add(0);
 			}
 			Heuristic(ref first);
 			frontier.Add(first);
+		}
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc) input, int heur) : this(input)
+		{
+			heurChoice = heur;
 		}
 
 		public void Heuristic(ref Node node)
@@ -59,19 +64,49 @@ namespace Word_Analyzer
 			switch(heurChoice)
 			{
 				case 0:
-					HeurBasic(ref node);
+					node.heur = HeurBasic(node);
+					break;
+				default:
+				case 1:
+					node.heur = HeurWordsIncLetter(node);
 					break;
 			}
 		}
 
-		public void HeurBasic(ref Node node)
+		//Sums the # of words each letter pos is in
+		public long HeurBasic(Node node)
 		{
 			long heur = 0;
 			for(int i = 0; i < node.offset.Count; i++)
 			{
 				heur += letterPos[i][node.offset[i]].sum;
 			}
-			node.heur = heur;
+			return heur;
+		}
+
+		//performs HeurBasic and adds the # of words each letter is in
+		//Duplicate letters are ignored
+		public long HeurWordsIncLetter(Node node)
+		{
+			long heur = HeurBasic(node);
+			string used = "";
+			for (int i = 0; i < node.offset.Count; i++)
+			{
+				char letter = letterPos[i][node.offset[i]].letter;
+				if (false == used.Contains(letter))
+				{
+					used += letter;
+					foreach ((char letterTest, int sum) in letterInc)
+					{
+						if (letterTest == letter)
+						{
+							heur += sum;
+							break;
+						}
+					}
+				}
+			}
+			return heur;
 		}
 
 		public bool IsWord(Node node)
@@ -113,7 +148,7 @@ namespace Word_Analyzer
 				newNode.offset[i]++;
 				if (letterPos[i].Count > newNode.offset[i])
 				{
-					HeurBasic(ref newNode);
+					Heuristic(ref newNode);
 					if (false == closed.Contains(newNode) && false == frontier.Contains(newNode))
 						frontier.Add(newNode);
 				}
@@ -128,15 +163,15 @@ namespace Word_Analyzer
 				{
 					return null;
 				}
-				if(true == IsWord(frontier.First()))
+				if(true == IsWord(frontier.Max()))
 				{
-					return GetWord(frontier.First());
+					return GetWord(frontier.Max());
 				}
 				else
 				{
-					Expand(frontier.First());
-					closed.Add(frontier.First());
-					frontier.Remove(frontier.First());
+					Expand(frontier.Max());
+					closed.Add(frontier.Max());
+					frontier.Remove(frontier.Max());
 				}
 			}
 		}

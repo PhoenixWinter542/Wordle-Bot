@@ -160,7 +160,7 @@ namespace Word_Analyzer
 		}
 
 		//Compute
-		public List<List<(char, int)>> Compute(List<char> alphabet)
+		public List<List<(char, int)>> ComputePos(List<char> alphabet)
 		{
 			List<List<(char, int)>> results = new List<List<(char, int)>>();
 			for (int i = 0; i < length; i++)
@@ -181,8 +181,23 @@ namespace Word_Analyzer
 			return results;
 		}
 
+		public List<(char, int)> ComputeInc(List<char> alphabet)
+		{
+			List<(char, int)> results = new List<(char, int)>();
+			foreach (char letter in alphabet)
+			{
+				cmd.CommandText = "SELECT count(*) FROM english.dbo.words WHERE words like '%" + letter + "%';";
+				SqlDataReader reader = cmd.ExecuteReader();
+				reader.Read();
+				results.Add((letter, reader.GetInt32(0)));
+				reader.Close();
+			}
+
+			return results;
+		}
+
 		//0 - char not in word	|	1 - char in word, not in position	|	2 - char in word, in correct position
-		public List<List<(char, int)>> Run(List<(char, short)> feedback)
+		public (List<List<(char, int)>>, List<(char, int)>) Run(List<(char, short)> feedback)
 		{
 			startConnection();
 
@@ -208,7 +223,7 @@ namespace Word_Analyzer
 			}
 
 			//Compute
-			List<List<(char, int)>> results = Compute(alphabet);
+			(List<List<(char, int)>>, List<(char, int)>) results = (ComputePos(alphabet), ComputeInc(alphabet));
 			endConnection();
 			return results;
 		}

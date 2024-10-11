@@ -71,6 +71,19 @@ namespace WordleTests
 			Assert.IsTrue(Enumerable.SequenceEqual(an.bannedPos, bannedPos));
 			Assert.IsTrue(Enumerable.SequenceEqual(an.reqPos, reqPos));
 			an.Dispose();
+
+			List<(char, short)> feedback = new List<(char, short)> { ('s', 0), ('a', 1), ('r', 0), ('e', 1), ('e', 1) };
+			an = new Analyzer(5);
+			an.UpdateLetters(feedback);
+			bannedLetters = new List<char> { 's', 'r',};
+			reqLetters = new List<char> { 'a', 'e' };
+			bannedPos = new List<(char, short)> { ('a', 1), ('e', 3), ('e', 4) };
+			reqPos = new List<(char, short)> { };
+			Assert.IsTrue(Enumerable.SequenceEqual(an.bannedLetters, bannedLetters));
+			Assert.IsTrue(Enumerable.SequenceEqual(an.reqLetters, reqLetters));
+			Assert.IsTrue(Enumerable.SequenceEqual(an.bannedPos, bannedPos));
+			Assert.IsTrue(Enumerable.SequenceEqual(an.reqPos, reqPos));
+			an.Dispose();
 		}
 
 		[TestMethod]
@@ -88,6 +101,10 @@ namespace WordleTests
 
 			an.bannedLetters = new List<char> { 's', 'i', 'n', 'r', 'p', 'd', 'h' };
 			compare = new List<char> { 'a', 'b', 'c', 'e', 'f', 'g', 'j', 'k', 'l', 'm', 'o', 'q', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+			Assert.IsTrue(Enumerable.SequenceEqual(an.GetAllowed(), compare));
+
+			an.bannedLetters = new List<char> { 's', 'r' };
+			compare = new List<char> { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 			Assert.IsTrue(Enumerable.SequenceEqual(an.GetAllowed(), compare));
 			an.Dispose();
 		}
@@ -127,13 +144,18 @@ namespace WordleTests
 			an.bannedPos = new List<(char, short)> { ('t', 0), ('a', 1), ('t', 4), ('e', 4) };
 			Assert.AreEqual(6045, an.RemInvalPos());
 			an.Dispose();
+
+			an = new Analyzer(5);
+			an.bannedPos = new List<(char, short)> { ('a', 1), ('e', 3), ('e', 4) };
+			Assert.AreEqual(6362, an.RemInvalPos());
+			an.Dispose();
 		}
 
 		[TestMethod]
-		public void ComputeTest()
+		public void ComputePosTest()
 		{
 			Analyzer an = new Analyzer(5);
-			List<List<(char letter, int num)>> results = an.Compute(new List<char> { 'a', 'e' });
+			List<List<(char letter, int num)>> results = an.ComputePos(new List<char> { 'a', 'e' });
 			
 			//e
 			Assert.AreEqual(421, results[0][1].num);
@@ -148,6 +170,17 @@ namespace WordleTests
 			Assert.AreEqual(1481, results[2][0].num);
 			Assert.AreEqual(1585, results[3][1].num);
 			Assert.AreEqual(1282, results[4][1].num);
+			an.Dispose();
+		}
+
+		[TestMethod]
+		public void ComputeIncTest()
+		{
+			Analyzer an = new Analyzer(5);
+			List<(char letter, int num)> results = an.ComputeInc(new List<char> { 'a', 'e' });
+
+			Assert.AreEqual(7248, results[0].num);	//a
+			Assert.AreEqual(6730, results[1].num);	//e
 			an.Dispose();
 		}
 	}
