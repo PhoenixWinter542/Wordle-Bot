@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordleTests", "WordleTests\
 		{F97C0EB0-7A78-4B9B-9DAA-7DC0E569FD35} = {F97C0EB0-7A78-4B9B-9DAA-7DC0E569FD35}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wordle Helper .Net Framework", "Wordle Helper .Net Framework\Wordle Helper .Net Framework.csproj", "{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,14 @@ Global
 		{09CED2E9-6D83-4B83-9F18-5507266803B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{09CED2E9-6D83-4B83-9F18-5507266803B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{09CED2E9-6D83-4B83-9F18-5507266803B8}.Release|x86.Build.0 = Release|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Debug|x86.Build.0 = Debug|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Release|x86.ActiveCfg = Release|Any CPU
+		{3ADEA86B-039D-41D3-8C7E-1515FC16E19B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

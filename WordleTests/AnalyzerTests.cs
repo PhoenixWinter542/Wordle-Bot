@@ -110,6 +110,19 @@ namespace WordleTests
 		}
 
 		[TestMethod]
+		public void ReturnOldResults()
+		{
+			Analyzer an = new Analyzer(5);
+
+			var run1 = an.Run(new List<(char, short)> { ('s', 2), ('a', 0), ('i', 2), ('n', 2), ('t', 2) });
+			var run2 = an.Run(null);
+
+			Assert.AreEqual(run1.Item2.Count, run2.Item2.Count);
+
+			an.Dispose();
+		}
+
+		[TestMethod]
 		public void RemReqPosTest()
 		{
 			Analyzer an = new Analyzer(5);

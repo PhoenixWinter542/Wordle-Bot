@@ -27,7 +27,9 @@ namespace Word_Analyzer
 
 	public class Search
 	{
-		private static string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
+		public readonly string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
+		public readonly string tableString = "english.dbo.words";
+		public readonly string columnString = "words";
 
 		public List<List<(char letter, int sum)>> letterPos;	//Tracks the number of words containing each letter for each position
 		public List<(char letter, int sum)> letterInc;   //Tracks the number of words containing each letter
@@ -59,6 +61,28 @@ namespace Word_Analyzer
 			heurChoice = heur;
 		}
 
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc) input, string connectionString) : this(input)
+		{
+			this.connectionString = connectionString;
+		}
+
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc)  input, int heur, string connectionString) : this(input, heur)
+		{
+			this.connectionString = connectionString;
+		}
+
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc) input, string connectionString, string table, string column) : this(input, connectionString)
+		{
+			tableString = table;
+			columnString = column;
+		}
+
+		public Search((List<List<(char, int)>> pos, List<(char, int)> inc)  input, int heur, string connectionString, string table, string column) : this(input, heur, connectionString)
+		{
+			tableString = table;
+			columnString = column;
+		}
+
 		public void Heuristic(ref Node node)
 		{
 			switch(heurChoice)
@@ -73,7 +97,11 @@ namespace Word_Analyzer
 			}
 		}
 
-		//Sums the # of words each letter pos is in
+		/// <summary>
+		/// Sums the # of words each letter pos is in
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
 		public long HeurBasic(Node node)
 		{
 			long heur = 0;
@@ -84,8 +112,12 @@ namespace Word_Analyzer
 			return heur;
 		}
 
-		//performs HeurBasic and adds the # of words each letter is in
-		//Duplicate letters are ignored
+		/// <summary>
+		/// performs HeurBasic and adds the # of words each letter is in, 
+		/// Duplicate letters are ignored
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
 		public long HeurWordsIncLetter(Node node)
 		{
 			long heur = HeurBasic(node);
@@ -112,7 +144,7 @@ namespace Word_Analyzer
 		public bool IsWord(Node node)
 		{
 			string word = GetWord(node);
-			string query = "SELECT * FROM english.dbo.words WHERE words = '" + word + "';";
+			string query = "SELECT * FROM " + tableString + " WHERE " + columnString + " = '" + word + "';";
 			SqlConnection conn = new SqlConnection(connectionString);
 			SqlCommand cmd = new SqlCommand(query, conn);
 
@@ -169,9 +201,10 @@ namespace Word_Analyzer
 				}
 				else
 				{
-					Expand(frontier.Max());
-					closed.Add(frontier.Max());
-					frontier.Remove(frontier.Max());
+					Node max = frontier.Max();
+					closed.Add(max);
+					frontier.Remove(max);
+					Expand(max);
 				}
 			}
 		}

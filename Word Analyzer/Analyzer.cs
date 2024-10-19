@@ -11,7 +11,9 @@ namespace Word_Analyzer
 {
 	public class Analyzer : IDisposable
 	{
-		private static string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
+		private readonly string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
+		public readonly string tableString = "english.dbo.words";
+		public readonly string columnString = "words";
 		SqlConnection conn;
 		SqlTransaction transaction;
 		SqlCommand cmd;
@@ -40,6 +42,12 @@ namespace Word_Analyzer
 			connectionString = connection;
 		}
 
+		public Analyzer(short length, string connection, string table, string column) : this(length, connection)
+		{
+			tableString = table;
+			columnString = column;
+		}
+
 		public void startConnection()
 		{
 			if (ConnectionState.Closed != conn.State)
@@ -60,8 +68,12 @@ namespace Word_Analyzer
 
 		public void Dispose()
 		{
-			transaction.Rollback();
-			conn.Close();
+			try
+			{
+				transaction.Rollback();
+				conn.Close();
+			}
+			catch { };
 		}
 
 		public string CreateRegex(int pos, char letter)
@@ -71,7 +83,7 @@ namespace Word_Analyzer
 			for (int i = 0; i < pos; i++) { regex += "_"; }
 			regex += letter;
 			for (int i = pos + 1; i < length; i++) { regex += "_"; }
-			
+
 			return regex + "'";
 		}
 
@@ -111,55 +123,66 @@ namespace Word_Analyzer
 			return alphabet;
 		}
 
-		//Remove words without letters in required positions
+		/// <summary>
+		/// Remove words without letters in required positions
+		/// </summary>
+		/// <returns></returns>
 		public int RemReqPos()
 		{
 			int sum = 0;
 			foreach ((char letter, short pos) in reqPos)
 			{
-				cmd.CommandText = "DELETE FROM english.dbo.words WHERE words NOT LIKE " + CreateRegex(pos, letter) + ";";
+				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " NOT LIKE " + CreateRegex(pos, letter) + ";";
 				sum += cmd.ExecuteNonQuery();
 			}
 			return sum;
 		}
 
-		//Remove words without required letters, no position reqs
+		/// <summary>
+		/// Remove words without required letters, no position reqs
+		/// </summary>
 		public int RemReqNPos()
 		{
 			int sum = 0;
 			foreach (char letter in reqLetters)
 			{
-				cmd.CommandText = "DELETE FROM english.dbo.words WHERE words NOT LIKE '%" + letter + "%';";
+				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " NOT LIKE '%" + letter + "%';";
 				sum += cmd.ExecuteNonQuery();
 			}
 			return sum;
 		}
 
-		//Remove words with banned letters
+		/// <summary>
+		/// Remove words with banned letters
+		/// </summary>
+		/// <returns></returns>
 		public int RemBanned()
 		{
 			int sum = 0;
 			foreach (char letter in bannedLetters)
 			{
-				cmd.CommandText = "DELETE FROM english.dbo.words WHERE words LIKE '%" + letter + "%';";
+				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " LIKE '%" + letter + "%';";
 				sum += cmd.ExecuteNonQuery();
 			}
 			return sum;
 		}
 
-		//Remove words with letters in invalid positions
+		/// <summary>
+		/// Remove words with letters in invalid positions
+		/// </summary>
+		/// <returns></returns>
 		public int RemInvalPos()
 		{
 			int sum = 0;
-			foreach((char letter, short pos) in bannedPos)
+			foreach ((char letter, short pos) in bannedPos)
 			{
-				cmd.CommandText = "DELETE FROM english.dbo.words WHERE words LIKE " + CreateRegex(pos, letter) + ";";
+				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " LIKE " + CreateRegex(pos, letter) + ";";
 				sum += cmd.ExecuteNonQuery();
 			}
 			return sum;
 		}
 
-		//Compute
+		///Compute
 		public List<List<(char, int)>> ComputePos(List<char> alphabet)
 		{
 			List<List<(char, int)>> results = new List<List<(char, int)>>();
@@ -168,7 +191,7 @@ namespace Word_Analyzer
 				List<(char, int)> column = new List<(char, int)>();
 				foreach (char letter in alphabet)
 				{
-					cmd.CommandText = "SELECT count(*) FROM english.dbo.words WHERE words like " + CreateRegex(i, letter) + ";";
+					cmd.CommandText = "SELECT count(*) FROM " + tableString + " WHERE " + columnString + " like " + CreateRegex(i, letter) + ";";
 					SqlDataReader reader = cmd.ExecuteReader();
 					reader.Read();
 					column.Add((letter, reader.GetInt32(0)));
@@ -186,7 +209,7 @@ namespace Word_Analyzer
 			List<(char, int)> results = new List<(char, int)>();
 			foreach (char letter in alphabet)
 			{
-				cmd.CommandText = "SELECT count(*) FROM english.dbo.words WHERE words like '%" + letter + "%';";
+				cmd.CommandText = "SELECT count(*) FROM " + tableString + " WHERE " + columnString + " like '%" + letter + "%';";
 				SqlDataReader reader = cmd.ExecuteReader();
 				reader.Read();
 				results.Add((letter, reader.GetInt32(0)));
@@ -196,7 +219,19 @@ namespace Word_Analyzer
 			return results;
 		}
 
-		//0 - char not in word	|	1 - char in word, not in position	|	2 - char in word, in correct position
+		public void ToLower(ref List<(char letter, short state)> feedback)
+		{
+			for (int i = 0; i < feedback.Count; i++)
+			{
+				feedback[i] = (char.ToLower(feedback[i].letter), feedback[i].state);
+			}
+		}
+
+		/// <summary>
+		/// 0 - char not in word	|	1 - char in word, not in position	|	2 - char in word, in correct position
+		/// </summary>
+		/// <param name="feedback"></param>
+		/// <returns></returns>
 		public (List<List<(char, int)>>, List<(char, int)>) Run(List<(char, short)> feedback)
 		{
 			startConnection();
@@ -204,23 +239,22 @@ namespace Word_Analyzer
 			//Create list of allowed letters
 			UpdateLetters(feedback);
 			List<char> alphabet = GetAllowed();
-			
+
 
 			//Remove invalid words from dataset
-			if (feedback != null)
-			{
-				//Remove words without letters in required positions
-				RemReqPos();
 
-				//Remove words without required letters, no position reqs
-				RemReqNPos();
+			//Remove words without letters in required positions
+			RemReqPos();
 
-				//Remove words with banned letters
-				RemBanned();
+			//Remove words without required letters, no position reqs
+			RemReqNPos();
 
-				//Remove words with letters in invalid positions
-				RemInvalPos();
-			}
+			//Remove words with banned letters
+			RemBanned();
+
+			//Remove words with letters in invalid positions
+			RemInvalPos();
+
 
 			//Compute
 			(List<List<(char, int)>>, List<(char, int)>) results = (ComputePos(alphabet), ComputeInc(alphabet));
