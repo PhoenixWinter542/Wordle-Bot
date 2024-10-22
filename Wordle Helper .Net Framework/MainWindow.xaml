@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Wordle_Helper"
         mc:Ignorable="d"
-        Title="Wordle Helper" Height="800" Width="800"
-		MinHeight="760" MinWidth="820"
+        Title="Wordle Helper" Height="700" Width="650"
+		MinHeight="500" MinWidth="700"
 		FocusManager.IsFocusScope="True"
 		x:Name="BaseWindow"
 		Loaded="Window_Loaded">
@@ -51,8 +51,8 @@
 			</Setter>
 		</Style>
 	</Window.Resources>
-	<Grid MaxHeight="630" MaxWidth= "630"
-		  MinHeight="630" MinWidth="630"
+	<Grid MaxHeight="0" MaxWidth= "0"
+		  MinHeight="460" MinWidth="575"
 		  x:Name="Layout"
 		  Focusable="False">
 		<Grid.RowDefinitions>
@@ -70,13 +70,13 @@
 			<ColumnDefinition Width="1*"/>
 			<ColumnDefinition Width="1*"/>
 			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="1.5*"/>
 		</Grid.ColumnDefinitions>
-		<Button x:Name="b0" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="0" Height="50" Width="70" Visibility="Visible"/>
-		<Button x:Name="b1" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="1" Height="50" Width="70" Visibility="Hidden"/>
-		<Button x:Name="b2" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="2" Height="50" Width="70" Visibility="Hidden"/>
-		<Button x:Name="b3" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="3" Height="50" Width="70" Visibility="Hidden"/>
-		<Button x:Name="b4" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="4" Height="50" Width="70" Visibility="Hidden"/>
-		<Button x:Name="b5" Content="Suggest" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Center" Grid.Column="6" Grid.Row="5" Height="50" Width="70" Visibility="Hidden"/>
+		<Button x:Name="b0" Content="Suggest" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="0" Height="50" Width="70" Visibility="Visible" Click="RunRow" Background="CadetBlue" Foreground="LightCyan" BorderBrush="LightBlue" Focusable="False"/>
+		<Button x:Name="b1" Content="Suggest" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="1" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="WhiteSmoke" Foreground="LightGray" BorderBrush="LightGray" Focusable="False"/>
+		<Button x:Name="b2" Content="Submit" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="2" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="Sienna" Foreground="BlanchedAlmond" BorderBrush="BurlyWood" Focusable="False"/>
+		<Button x:Name="b3" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="3" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+		<Button x:Name="b4" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="4" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+		<Button x:Name="b5" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="5" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
 	</Grid>
 </Window>
