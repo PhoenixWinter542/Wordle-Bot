@@ -6,14 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
+using System.Configuration;
 
 namespace Word_Analyzer
 {
 	public class Analyzer : IDisposable
 	{
-		private readonly string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
-		public readonly string tableString = "english.dbo.words";
-		public readonly string columnString = "words";
+		public readonly string connectionString = ConfigurationManager.ConnectionStrings["connection"].ConnectionString;
+		public readonly string tableString = ConfigurationManager.ConnectionStrings["table"].ConnectionString;
+		public readonly string columnString = ConfigurationManager.ConnectionStrings["column"].ConnectionString;
 		SqlConnection conn;
 		SqlTransaction transaction;
 		SqlCommand cmd;
@@ -28,7 +29,8 @@ namespace Word_Analyzer
 		public Analyzer(short length)
 		{
 			conn = new SqlConnection(connectionString);
-			startConnection();
+			if (false == startConnection())
+				throw (new Exception("Connection Failed"));
 			fullAlphabet = new List<char>() { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 			bannedLetters = new List<char>();
 			bannedPos = new List<(char, short)>();
@@ -48,14 +50,22 @@ namespace Word_Analyzer
 			columnString = column;
 		}
 
-		public void startConnection()
+		public bool startConnection()
 		{
-			if (ConnectionState.Closed != conn.State)
-				return;
-			conn.Open();
-			transaction = conn.BeginTransaction();
-			cmd = conn.CreateCommand();
-			cmd.Transaction = transaction;
+			try
+			{
+				if (ConnectionState.Closed != conn.State)
+					return true;
+				conn.Open();
+				transaction = conn.BeginTransaction();
+				cmd = conn.CreateCommand();
+				cmd.Transaction = transaction;
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public void endConnection()
@@ -66,11 +76,26 @@ namespace Word_Analyzer
 			conn.Close();
 		}
 
+		public bool TestConnection()
+		{
+			try
+			{
+				conn.Open();
+				conn.Close();
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
 		public void Dispose()
 		{
 			try
 			{
-				transaction.Rollback();
+				if (null != transaction.Connection)
+					transaction.Rollback();
 				conn.Close();
 			}
 			catch { };

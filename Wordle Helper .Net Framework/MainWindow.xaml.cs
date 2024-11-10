@@ -43,12 +43,11 @@ namespace Wordle_Helper
 		{
 			InitializeComponent();
 			connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
-			an = new Analyzer(5, connectionString, tableString, columnString);
 			for (int row = 0; row < 6; row++)
 			{
 				List<Button> buttonRow = new List<Button>();
 				List<short> stateRow = new List<short>();
-				for (int col = 1; col < 6; col++)
+				for (int col = 0; col < 5; col++)
 				{
 					Button tmp = new Button();
 					tmp.Background = new SolidColorBrush(Colors.Transparent);
@@ -61,7 +60,7 @@ namespace Wordle_Helper
 					tmp.FontSize = 35;
 					tmp.FontWeight = FontWeights.DemiBold;
 					tmp.Height = 70;
-					tmp.Name = "b" + row.ToString() + (col - 1).ToString();
+					tmp.Name = "b" + row.ToString() + (col).ToString();
 					Grid.SetRow(tmp, row);
 					Grid.SetColumn(tmp, col);
 					tmp.PreviewMouseLeftButtonDown += new MouseButtonEventHandler(ColorUp);
@@ -81,6 +80,33 @@ namespace Wordle_Helper
 			SubmitButtons.Add(b3);
 			SubmitButtons.Add(b4);
 			SubmitButtons.Add(b5);
+			try
+			{
+				an = new Analyzer(5, connectionString, tableString, columnString);
+			}
+			catch
+			{
+				GetValidConnection();
+			}
+		}
+
+		private void GetValidConnection()
+		{
+			BaseWindow.Visibility = Visibility.Hidden;
+			DatabasePicker dbp = new DatabasePicker();
+			dbp.ShowDialog();
+			
+			try
+			{
+
+				an = new Analyzer(5, connectionString, tableString, columnString);
+			}
+			catch
+			{
+				GetValidConnection();
+			}
+
+			BaseWindow.Visibility = Visibility.Visible;
 		}
 
 		private void MouseWheelChange(object sender, MouseWheelEventArgs e)
@@ -420,7 +446,6 @@ namespace Wordle_Helper
 			{
 				//Gray out suggest button
 				GrayOut(SubmitButtons[position.row]);
-				HideBorders();
 				await Task.Run(() => Task.Delay(1));
 
 				//get word suggestion by running analyzer and search

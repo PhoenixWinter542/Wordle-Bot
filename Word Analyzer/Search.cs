@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Word_Analyzer
 {
@@ -27,9 +29,9 @@ namespace Word_Analyzer
 
 	public class Search
 	{
-		public readonly string connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
-		public readonly string tableString = "english.dbo.words";
-		public readonly string columnString = "words";
+		public readonly string connectionString = ConfigurationManager.ConnectionStrings["connection"].ConnectionString;
+		public readonly string tableString = ConfigurationManager.ConnectionStrings["table"].ConnectionString;
+		public readonly string columnString = ConfigurationManager.ConnectionStrings["column"].ConnectionString;
 
 		public List<List<(char letter, int sum)>> letterPos;	//Tracks the number of words containing each letter for each position
 		public List<(char letter, int sum)> letterInc;   //Tracks the number of words containing each letter
@@ -83,18 +85,37 @@ namespace Word_Analyzer
 			columnString = column;
 		}
 
-		public void Heuristic(ref Node node)
+		/// <summary>
+		/// Normalizes the letter position and inclusion sums and scales them to the max value of 10,000,000 each
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public (long, long) NormalizeNode(Node node)
 		{
-			switch(heurChoice)
+			int scale = 10000000;
+
+			//Scale letter position sums
+			long max = 0;	//max is if every letter in the word is the most common for that position
+			for (int i = 0; i < node.offset.Count; i++)
 			{
-				case 0:
-					node.heur = HeurBasic(node);
-					break;
-				default:
-				case 1:
-					node.heur = HeurWordsIncLetter(node);
-					break;
+				max += letterPos[i][0].sum;
 			}
+			long posHeur = (long)(((double)GetLetterPosHeur(node) / (double)max) * scale);
+
+
+			//Scale letter inclusion sums
+			max = 0;	//Max is if the word consists of the top n most common unique letters
+			for (int i = 0; i < node.offset.Count; i++)
+			{
+				if (letterInc.Count <= i)	//If all letters have been included once, stop
+					break;
+
+				max += letterInc[i].sum;
+			}
+
+			long incHeur = (long)(((double)GetLetterIncHeur(node) / (double)max) * scale);
+
+			return (posHeur, incHeur);
 		}
 
 		/// <summary>
@@ -102,10 +123,10 @@ namespace Word_Analyzer
 		/// </summary>
 		/// <param name="node"></param>
 		/// <returns></returns>
-		public long HeurBasic(Node node)
+		public long GetLetterPosHeur(Node node)
 		{
 			long heur = 0;
-			for(int i = 0; i < node.offset.Count; i++)
+			for (int i = 0; i < node.offset.Count; i++)
 			{
 				heur += letterPos[i][node.offset[i]].sum;
 			}
@@ -113,14 +134,14 @@ namespace Word_Analyzer
 		}
 
 		/// <summary>
-		/// performs HeurBasic and adds the # of words each letter is in, 
+		/// Adds the # of words each letter is in, 
 		/// Duplicate letters are ignored
 		/// </summary>
 		/// <param name="node"></param>
 		/// <returns></returns>
-		public long HeurWordsIncLetter(Node node)
+		public long GetLetterIncHeur(Node node)
 		{
-			long heur = HeurBasic(node);
+			long heur = 0;
 			string used = "";
 			for (int i = 0; i < node.offset.Count; i++)
 			{
@@ -139,6 +160,102 @@ namespace Word_Analyzer
 				}
 			}
 			return heur;
+		}
+
+		/// <summary>
+		/// Assigns heuristic based on the global heuristic choice
+		/// </summary>
+		/// <param name="node"></param>
+		public void Heuristic(ref Node node)
+		{
+			switch(heurChoice)
+			{
+				case 0:
+					node.heur = HeurPos(node);
+					break;
+				default:
+				case 1:
+					node.heur = HeurWordsIncLetter(node);
+					break;
+				case 2:
+					node.heur = HeurInc(node);
+					break;
+				case 3:
+					node.heur = HeurNormalized(node);
+					break;
+				case 4:
+					node.heur = Heur2to1(node);
+					break;
+				case 5:
+					node.heur = Heur1to2(node);
+					break;
+				case 6:
+					node.heur = Heur1to4(node);
+					break;
+				case 7:
+					node.heur = Heur1to8(node);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Only use letter position
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public long HeurPos(Node node)
+		{
+			return GetLetterPosHeur(node);
+		}
+
+		/// <summary>
+		/// Only use letter inclusion
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public long HeurInc(Node node)
+		{
+			return GetLetterIncHeur(node);
+		}
+
+		public long HeurNormalized(Node node)
+		{
+			var heurs = NormalizeNode(node);
+			return heurs.Item1 + heurs.Item2;
+		}
+
+		public long Heur2to1(Node node)
+		{
+			var heurs = NormalizeNode(node);
+			return heurs.Item1 * 2 + heurs.Item2;
+		}
+
+		public long Heur1to2(Node node)
+		{
+			var heurs = NormalizeNode(node);
+			return heurs.Item1 + heurs.Item2 * 2;
+		}
+
+		public long Heur1to4(Node node)
+		{
+			var heurs = NormalizeNode(node);
+			return heurs.Item1 + heurs.Item2 * 4;
+		}
+
+		public long Heur1to8(Node node)
+		{
+			var heurs = NormalizeNode(node);
+			return heurs.Item1 + heurs.Item2 * 8;
+		}
+
+		/// <summary>
+		/// Use letter position and letter inclusion
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public long HeurWordsIncLetter(Node node)
+		{
+			return GetLetterPosHeur(node) + GetLetterIncHeur(node);
 		}
 
 		public bool IsWord(Node node)

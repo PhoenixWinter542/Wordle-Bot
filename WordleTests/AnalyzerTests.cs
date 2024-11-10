@@ -196,5 +196,21 @@ namespace WordleTests
 			Assert.AreEqual(6730, results[1].num);	//e
 			an.Dispose();
 		}
+
+		[TestMethod]
+		public void TestConnectionTest()
+		{
+			Analyzer an = new Analyzer(5);
+			Assert.IsTrue(an.TestConnection());
+
+			an = new Analyzer(5, "NotAConnection");
+			Assert.IsFalse(an.TestConnection());
+
+			an = new Analyzer(5, an.connectionString, "NotATable", "words");
+			Assert.IsFalse(an.TestConnection());
+
+			an = new Analyzer(5, an.connectionString, "english.dbo.words", "NotAColumn");
+			Assert.IsFalse(an.TestConnection());
+		}
 	}
 }

@@ -59,12 +59,24 @@ namespace WordleTests
 		}
 
 		[TestMethod]
-		public void HeurBasicTest()
+		public void HeurPosTest()
 		{
 			Search search = new Search((letterPos, letterInc));
 			Node test = new Node();
 			test.offset = new List<short> { 1, 0, 0, 0, 0 };
-			Assert.AreEqual(1430, search.HeurBasic(test));
+			Assert.AreEqual(1430, search.HeurPos(test));
+		}
+
+		[TestMethod]
+		public void HeurIncTest()
+		{
+
+		}
+
+		[TestMethod]
+		public void HeurNormalizedTest()
+		{
+
 		}
 
 		[TestMethod]

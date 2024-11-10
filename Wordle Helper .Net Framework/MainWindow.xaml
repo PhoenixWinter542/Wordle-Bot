@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Wordle_Helper"
         mc:Ignorable="d"
         Title="Wordle Helper" Height="700" Width="650"
-		MinHeight="500" MinWidth="700"
+		MinHeight="500" MinWidth="570"
 		FocusManager.IsFocusScope="True"
 		x:Name="BaseWindow"
 		Loaded="Window_Loaded">
@@ -51,32 +51,46 @@
 			</Setter>
 		</Style>
 	</Window.Resources>
-	<Grid MaxHeight="0" MaxWidth= "0"
-		  MinHeight="460" MinWidth="575"
-		  x:Name="Layout"
-		  Focusable="False">
+	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="1*"/>
-			<RowDefinition Height="1*"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="1*" MinHeight="450"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="1.5*"/>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="1*" MinWidth="560"/>
+			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-		<Button x:Name="b0" Content="Suggest" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="0" Height="50" Width="70" Visibility="Visible" Click="RunRow" Background="CadetBlue" Foreground="LightCyan" BorderBrush="LightBlue" Focusable="False"/>
-		<Button x:Name="b1" Content="Suggest" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="1" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="WhiteSmoke" Foreground="LightGray" BorderBrush="LightGray" Focusable="False"/>
-		<Button x:Name="b2" Content="Submit" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="2" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="Sienna" Foreground="BlanchedAlmond" BorderBrush="BurlyWood" Focusable="False"/>
-		<Button x:Name="b3" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="3" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
-		<Button x:Name="b4" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="4" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
-		<Button x:Name="b5" Content="T" HorizontalAlignment="Center" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="6" Grid.Row="5" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+		<Grid x:Name="Layout"
+		  Focusable="False"
+		  Grid.Column="1"
+		  Grid.Row="1"
+		  VerticalAlignment="Center"
+		  HorizontalAlignment="Center"
+		  Margin="76,0,0,0">
+			<Grid.RowDefinitions>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+				<RowDefinition MinHeight="76" MaxHeight="76"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition MinWidth="76" MaxWidth="76"/>
+				<ColumnDefinition MinWidth="76" MaxWidth="76"/>
+				<ColumnDefinition MinWidth="76" MaxWidth="76"/>
+				<ColumnDefinition MinWidth="76" MaxWidth="76"/>
+				<ColumnDefinition MinWidth="76" MaxWidth="76"/>
+				<ColumnDefinition MinWidth="90" MaxWidth="90"/>
+			</Grid.ColumnDefinitions>
+			<Button x:Name="b0" Content="Suggest" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="0" Height="50" Width="70" Visibility="Visible" Click="RunRow" Background="CadetBlue" Foreground="LightCyan" BorderBrush="LightBlue" Focusable="False"/>
+			<Button x:Name="b1" Content="Suggest" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="1" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="WhiteSmoke" Foreground="LightGray" BorderBrush="LightGray" Focusable="False"/>
+			<Button x:Name="b2" Content="Submit" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="2" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="Sienna" Foreground="BlanchedAlmond" BorderBrush="BurlyWood" Focusable="False"/>
+			<Button x:Name="b3" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="3" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+			<Button x:Name="b4" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="4" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+			<Button x:Name="b5" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="5" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+		</Grid>
 	</Grid>
 </Window>

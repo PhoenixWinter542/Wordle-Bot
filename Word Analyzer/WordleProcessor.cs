@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,17 +29,18 @@ namespace Word_Analyzer
 		///<summary>
 		///The first guess of search is always the same for each heuristic, this allows for different starts
 		///</summary>
-		public static List<string> InverseWordle(string firstGuess, string answer)
+		public static List<string> InverseWordle(string firstGuess, string answer, int heur)
 		{
 			Analyzer an = new Analyzer(5);
 			string result = firstGuess;
 			List<string> guesses = new List<string> { result };
 
-			while(result != answer)
+			while (result != answer)
 			{
-				Search search = new Search(an.Run(Process(result, answer)));
+				Search search = new Search(an.Run(Process(result, answer)), heur);
 				result = search.Run();
 				guesses.Add(result);
+				Debug.WriteLine(result);
 			}
 
 			an.Dispose();
