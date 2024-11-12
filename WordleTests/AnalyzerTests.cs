@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Word_Analyzer;
+
 
 namespace WordleTests
 {
@@ -23,6 +25,15 @@ namespace WordleTests
 			Assert.AreEqual("'__a__'", an.CreateRegex(2, 'a'));
 			Assert.AreEqual("'___a_'", an.CreateRegex(3, 'a'));
 			Assert.AreEqual("'____a'", an.CreateRegex(4, 'a'));
+			an.Dispose();
+		}
+
+		[TestMethod]
+		public void CapitalizationTest()
+		{
+			Analyzer an = new Analyzer(5);
+			an.bannedLetters = new List<char> { 'S', 'I', 'N', 'R', 'P', 'D', 'H' };
+			Assert.AreEqual(14470, an.RemBanned());
 			an.Dispose();
 		}
 		
@@ -203,14 +214,14 @@ namespace WordleTests
 			Analyzer an = new Analyzer(5);
 			Assert.IsTrue(an.TestConnection());
 
-			an = new Analyzer(5, "NotAConnection");
-			Assert.IsFalse(an.TestConnection());
+			Assert.ThrowsException<Exception>(() => new Analyzer(5, "server=DESKTOP-SV6S000;trusted_connection=Yes"));
 
-			an = new Analyzer(5, an.connectionString, "NotATable", "words");
-			Assert.IsFalse(an.TestConnection());
+			Assert.ThrowsException<ArgumentException>(() => new Analyzer(5, "NotAConnection"));
 
-			an = new Analyzer(5, an.connectionString, "english.dbo.words", "NotAColumn");
-			Assert.IsFalse(an.TestConnection());
+			Assert.ThrowsException<Exception>(() => new Analyzer(5, an.connectionString, "NotATable", "words"));
+
+			Assert.ThrowsException<Exception>(() => new Analyzer(5, an.connectionString, "english.dbo.words", "NotAColumn"));
+			an.Dispose();
 		}
 	}
 }

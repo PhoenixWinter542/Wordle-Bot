@@ -12,9 +12,9 @@ namespace Word_Analyzer
 {
 	public class Analyzer : IDisposable
 	{
-		public readonly string connectionString = ConfigurationManager.ConnectionStrings["connection"].ConnectionString;
-		public readonly string tableString = ConfigurationManager.ConnectionStrings["table"].ConnectionString;
-		public readonly string columnString = ConfigurationManager.ConnectionStrings["column"].ConnectionString;
+		public readonly string connectionString;
+		public readonly string tableString;
+		public readonly string columnString;
 		SqlConnection conn;
 		SqlTransaction transaction;
 		SqlCommand cmd;
@@ -26,28 +26,25 @@ namespace Word_Analyzer
 		public List<(char, short)> bannedPos;
 		public List<(char, short)> reqPos;
 
-		public Analyzer(short length)
+		public Analyzer(short length) : this(length, ConfigurationManager.ConnectionStrings["connection"].ConnectionString) { }
+
+		public Analyzer(short length, string connection) : this(length, connection, ConfigurationManager.ConnectionStrings["table"].ConnectionString, ConfigurationManager.ConnectionStrings["column"].ConnectionString) { }
+
+		public Analyzer(short length, string connection, string table, string column)
 		{
+			this.length = length;
+			connectionString= connection;
+			tableString = table;
+			columnString = column;
+
 			conn = new SqlConnection(connectionString);
-			if (false == startConnection())
+			if (false == startConnection() || false == TestConnection())
 				throw (new Exception("Connection Failed"));
 			fullAlphabet = new List<char>() { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 			bannedLetters = new List<char>();
 			bannedPos = new List<(char, short)>();
 			reqPos = new List<(char, short)>();
 			reqLetters = new List<char>();
-			this.length = length;
-		}
-
-		public Analyzer(short length, string connection) : this(length)
-		{
-			connectionString = connection;
-		}
-
-		public Analyzer(short length, string connection, string table, string column) : this(length, connection)
-		{
-			tableString = table;
-			columnString = column;
 		}
 
 		public bool startConnection()
@@ -60,6 +57,8 @@ namespace Word_Analyzer
 				transaction = conn.BeginTransaction();
 				cmd = conn.CreateCommand();
 				cmd.Transaction = transaction;
+				cmd.CommandText = "ALTER TABLE " + tableString + " ALTER COLUMN " + columnString + " VARCHAR(50) COLLATE sql_latin1_general_cp1_ci_as NULL;";
+				cmd.ExecuteNonQuery();
 				return true;
 			}
 			catch
@@ -80,8 +79,26 @@ namespace Word_Analyzer
 		{
 			try
 			{
-				conn.Open();
-				conn.Close();
+				bool startedOpen = true;
+				if (ConnectionState.Closed == conn.State)
+				{
+					startedOpen = false;
+					conn.Open();
+				}
+
+				cmd.CommandText = "SELECT count(" + columnString + ") FROM " + tableString + ";";
+				SqlDataReader reader = cmd.ExecuteReader();
+				reader.Read();
+				int result = reader.GetInt32(0);
+				reader.Close();
+
+				if (false == startedOpen)
+				{
+					conn.Close();
+				}
+				
+				if (result <= 0)
+					return false;
 				return true;
 			}
 			catch
@@ -242,14 +259,6 @@ namespace Word_Analyzer
 			}
 
 			return results;
-		}
-
-		public void ToLower(ref List<(char letter, short state)> feedback)
-		{
-			for (int i = 0; i < feedback.Count; i++)
-			{
-				feedback[i] = (char.ToLower(feedback[i].letter), feedback[i].state);
-			}
 		}
 
 		/// <summary>

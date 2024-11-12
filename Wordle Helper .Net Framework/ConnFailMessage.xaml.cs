@@ -17,16 +17,11 @@ namespace Wordle_Helper
 	/// <summary>
 	/// Interaction logic for Window1.xaml
 	/// </summary>
-	public partial class DatabasePicker : Window
+	public partial class ConnFailMessage : Window
 	{
-		public DatabasePicker()
+		public ConnFailMessage()
 		{
 			InitializeComponent();
 		}
-
-		private void Button_Click(object sender, RoutedEventArgs e)
-		{
-
-        }
-    }
+	}
 }

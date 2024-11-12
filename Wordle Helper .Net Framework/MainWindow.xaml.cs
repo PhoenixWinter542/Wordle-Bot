@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Word_Analyzer;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace Wordle_Helper
 {
@@ -28,9 +29,9 @@ namespace Wordle_Helper
 		readonly int maxRow = 6;
 		readonly int maxCol = 5;
 		Analyzer an;
-		string connectionString;
-		string tableString = "english.dbo.words";
-		string columnString = "words";
+		string connectionString = ConfigurationManager.ConnectionStrings["connection"].ConnectionString;
+		string tableString = ConfigurationManager.ConnectionStrings["table"].ConnectionString;
+		string columnString = ConfigurationManager.ConnectionStrings["column"].ConnectionString;
 		List<Button> SubmitButtons = new List<Button>();
 
 		Color correct = (Color)ColorConverter.ConvertFromString("#6aaa64");
@@ -42,7 +43,6 @@ namespace Wordle_Helper
 		public MainWindow()
 		{
 			InitializeComponent();
-			connectionString = "server=DESKTOP-SV6S892;trusted_connection=Yes";
 			for (int row = 0; row < 6; row++)
 			{
 				List<Button> buttonRow = new List<Button>();
@@ -86,27 +86,15 @@ namespace Wordle_Helper
 			}
 			catch
 			{
-				GetValidConnection();
+				ConnectionFailed();
 			}
 		}
 
-		private void GetValidConnection()
+		private void ConnectionFailed()
 		{
-			BaseWindow.Visibility = Visibility.Hidden;
-			DatabasePicker dbp = new DatabasePicker();
-			dbp.ShowDialog();
-			
-			try
-			{
-
-				an = new Analyzer(5, connectionString, tableString, columnString);
-			}
-			catch
-			{
-				GetValidConnection();
-			}
-
-			BaseWindow.Visibility = Visibility.Visible;
+			var errorBox = new ConnFailMessage();
+			errorBox.ShowDialog();
+			BaseWindow.Close();
 		}
 
 		private void MouseWheelChange(object sender, MouseWheelEventArgs e)
