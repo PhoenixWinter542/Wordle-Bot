@@ -62,6 +62,7 @@
 			<ColumnDefinition Width="1*" MinWidth="560"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
+		<Button Grid.Column="0" Grid.RowSpan="3" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Background="Sienna" Foreground="AntiqueWhite" Content="Reset" Focusable="False" BorderBrush="Sienna" Click="ResetAll"/>
 		<Grid x:Name="Layout"
 		  Focusable="False"
 		  Grid.Column="1"

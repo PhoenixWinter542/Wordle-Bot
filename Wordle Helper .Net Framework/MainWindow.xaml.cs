@@ -286,6 +286,9 @@ namespace Wordle_Helper
 			Button btn = SubmitButtons[position.row - 1];
 			btn.Visibility = Visibility.Hidden;
 
+			if (position.row == maxRow)
+				return;
+
 			//Make sure button is colored correctly
 			EnableSuggest();
 
@@ -326,6 +329,8 @@ namespace Wordle_Helper
 
 		private void RemoveColorHighlight()
 		{
+			if (maxRow == position.row)
+				return;
 			buttons[position.row][position.colorCol].BorderThickness = new Thickness(1);
 			if(0 != states[position.row][position.colorCol])
 			{
@@ -407,6 +412,35 @@ namespace Wordle_Helper
 			return runArgs;
 		}
 
+		private void SessionFailed()
+		{
+			position.row = maxRow - 1;
+			string failed = "0WORD";
+			int pos = 0;
+			foreach(Button btn in buttons[position.row])
+			{
+				btn.Background = new SolidColorBrush(Colors.Sienna);
+				btn.Foreground = new SolidColorBrush(Colors.AntiqueWhite);
+				btn.Content = failed[pos++];
+			}
+			NextRow();
+		}
+
+		private bool IsRunnable ((List<List<(char letter, int sum)>> letterPos, List<(char, int)>) results)
+		{
+			//Check if there are any possible words
+			for (int i = 0; i < results.letterPos.Count; i++)
+			{
+				if (0 == results.letterPos[i][0].sum)	//If the first letter has no options, no words can be made
+				{
+					SessionFailed();
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private async void RunRow(object sender, RoutedEventArgs e)
 		{
 			if (0 != states[position.row][position.colorCol])   //Advance colorCol if current letter has been evaluated
@@ -428,7 +462,8 @@ namespace Wordle_Helper
 				//update wordle analyzer with row word and values
 				var args = GetRunArgs();
 				var result = an.Run(args);
-				NextRow();
+				if (IsRunnable(result))
+					NextRow();
 			}
 			else if (0 == position.col)     //Suggest word
 			{
@@ -438,14 +473,17 @@ namespace Wordle_Helper
 
 				//get word suggestion by running analyzer and search
 				var result = an.Run(null);
-				string suggestion = new Search(result, connectionString, tableString, columnString).Run();
-				for (int i = 0; i < maxCol; i++)
+				if (IsRunnable(result))
 				{
-					buttons[position.row][i].Content = char.ToUpper(suggestion[i]);
-				}
-				position.col = maxCol;
+					string suggestion = new Search(result, connectionString, tableString, columnString).Run();
+					for (int i = 0; i < maxCol; i++)
+					{
+						buttons[position.row][i].Content = char.ToUpper(suggestion[i]);
+					}
+					position.col = maxCol;
 
-				DisableSubmit();
+					DisableSubmit();
+				}
 			}
 			else
 				return;
@@ -511,8 +549,46 @@ namespace Wordle_Helper
 			if (!Char.IsLetter(key[0]))
 				return;
 
-			buttons[position.row][position.col].Content = key;
-			MoveForward();
+			//Don't let the user type in the last row
+			if (position.row + 1 < maxRow)
+			{
+				buttons[position.row][position.col].Content = key;
+				MoveForward();
+			}
+		}
+
+		private void ResetAll(object sender, RoutedEventArgs e)
+		{
+			//Reset buttons
+			for(int row = 0; row < states.Count; row++)
+			{
+				for(int col = 0; col < states[0].Count; col++)
+				{
+					//Reset states
+					states[row][col] = 0;
+					//Reset colors
+					UpdateButtonColor(buttons[row][col], states[row][col]);
+					//Reset borders
+					buttons[row][col].BorderThickness = new Thickness(1);
+					//Reset text
+					buttons[row][col].Content = "";
+				}
+			}
+
+			//Reset position tracking
+			position = (0, 0, 0);
+
+			//Reset Submit buttons
+			foreach(Button btn in SubmitButtons)
+			{
+				btn.Visibility = Visibility.Collapsed;
+			}
+			SubmitButtons[0].Visibility = Visibility.Visible;
+			EnableSuggest();
+
+			//Reset wordle_analyzer
+			an.Dispose();
+			an = new Analyzer(5, connectionString, tableString, columnString);
 		}
 	}
 }
