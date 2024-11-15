@@ -223,5 +223,19 @@ namespace WordleTests
 			Assert.ThrowsException<Exception>(() => new Analyzer(5, an.connectionString, "english.dbo.words", "NotAColumn"));
 			an.Dispose();
 		}
+
+		[TestMethod]
+		public void UvulaTest()
+		{
+			Analyzer analyzer = new Analyzer(5);
+			List<(char, short)> word1 = new List<(char, short)> { ('s', 0), ('a', 1), ('i', 0), ('n', 0), ('t', 0) };
+			List<(char, short)> word2 = new List<(char, short)> { ('f', 0), ('l', 1), ('o', 0), ('u', 1), ('r', 0) };
+			List<(char, short)> word3 = new List<(char, short)> { ('b', 0), ('u', 1), ('l', 0), ('l', 2), ('a', 2) };
+			analyzer.Run(word1);
+			analyzer.Run(word2);
+			analyzer.Run(word3);
+
+			analyzer.Dispose();
+		}
 	}
 }

@@ -57,8 +57,6 @@ namespace Word_Analyzer
 				transaction = conn.BeginTransaction();
 				cmd = conn.CreateCommand();
 				cmd.Transaction = transaction;
-				cmd.CommandText = "ALTER TABLE " + tableString + " ALTER COLUMN " + columnString + " VARCHAR(50) COLLATE sql_latin1_general_cp1_ci_as NULL;";
-				cmd.ExecuteNonQuery();
 				return true;
 			}
 			catch
@@ -129,6 +127,14 @@ namespace Word_Analyzer
 			return regex + "'";
 		}
 
+		public void AddReqLetter(char letter)
+		{
+			if (false == reqLetters.Contains(letter))
+				reqLetters.Add(letter);
+			//Avoid double letter word issues
+			bannedLetters.Remove(letter);
+		}
+
 		public void UpdateLetters(List<(char, short)> feedback)
 		{
 			if (null == feedback)
@@ -139,16 +145,19 @@ namespace Word_Analyzer
 				switch (pos.status)
 				{
 					case 0:
-						bannedLetters.Add(pos.letter);
+						if (false == reqLetters.Contains(pos.letter))	//Avoid double letter word issues
+							bannedLetters.Add(pos.letter);
 						break;
 					case 1:
 						bannedPos.Add((pos.letter, i));
-						if (false == reqLetters.Contains(pos.letter))
-							reqLetters.Add(pos.letter);
+						AddReqLetter(pos.letter);
 						break;
 					case 2:
 						if (false == reqPos.Contains((pos.letter, i)))
+						{
 							reqPos.Add((pos.letter, i));
+							AddReqLetter(pos.letter);
+						}
 						break;
 				}
 			}

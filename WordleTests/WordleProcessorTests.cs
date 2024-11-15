@@ -25,8 +25,8 @@ namespace WordleTests
 		[TestMethod]
 		public void InverseWordleTest()
 		{
-			string answer = WordleProcessor.GetRandWord(ConnectionString);
-			List<string> results = WordleProcessor.InverseWordle("saree", answer, 1);
+			string answer = "uvula";//WordleProcessor.GetRandWord(ConnectionString);
+			List<string> results = WordleProcessor.InverseWordle("saint", answer, 1);
 			string output = "Answer: " + answer + "\nGuesses: ";
 			bool first = true;
 			foreach(string word in results)
