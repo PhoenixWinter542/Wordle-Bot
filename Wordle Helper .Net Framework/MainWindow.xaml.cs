@@ -245,10 +245,28 @@ namespace Wordle_Helper
 			btn.BorderBrush = new SolidColorBrush(Colors.LightBlue);
 		}
 
+		private void EnableReset()
+		{
+			Button btn = SubmitButtons[position.row];
+
+			//Set text to Reset
+			btn.Content = "Reset";
+
+			//Recolor current submit button
+			btn.Foreground = new SolidColorBrush(Colors.PeachPuff);
+			btn.Background = new SolidColorBrush(Colors.Sienna);
+			btn.BorderBrush = new SolidColorBrush(Colors.SandyBrown);
+		}
+
 		private void TestEnable()
 		{
 			if (maxRow <= position.row)
 				return;
+			else if(maxRow == position.row + 1)
+			{
+				EnableReset();
+				return;
+			}
 
 			//Determine if sumbit or suggest
 			if (0 == position.col)
@@ -286,15 +304,21 @@ namespace Wordle_Helper
 			Button btn = SubmitButtons[position.row - 1];
 			btn.Visibility = Visibility.Hidden;
 
-			if (position.row == maxRow)
-				return;
-
-			//Make sure button is colored correctly
-			EnableSuggest();
-
 			//Make new button visible
 			if (position.row < maxRow)
 				SubmitButtons[position.row].Visibility = Visibility.Visible;
+
+			if (position.row + 1 < maxRow)
+			{
+				//Make sure button is colored correctly
+				TestEnable();
+			}
+			else if (position.row < maxRow)     //Last row doesn't need a button
+			{
+				GrayOut(btn);
+				RunRow();
+				return;
+			}
 		}
 
 		private void MoveForward()
@@ -441,7 +465,12 @@ namespace Wordle_Helper
 			return true;
 		}
 
-		private async void RunRow(object sender, RoutedEventArgs e)
+		private void RunRow(object sender, RoutedEventArgs e)
+		{
+			RunRow();
+		}
+
+		private async void RunRow()
 		{
 			if (0 != states[position.row][position.colorCol])   //Advance colorCol if current letter has been evaluated
 			{
@@ -456,8 +485,8 @@ namespace Wordle_Helper
 
 				//Gray out submit button
 				GrayOut(SubmitButtons[position.row]);
-				HideBorders();
 				await Task.Run(() => Task.Delay(1));
+				HideBorders();
 
 				//update wordle analyzer with row word and values
 				var args = GetRunArgs();
@@ -482,7 +511,7 @@ namespace Wordle_Helper
 					}
 					position.col = maxCol;
 
-					DisableSubmit();
+					TestEnable();
 				}
 			}
 			else
@@ -494,13 +523,13 @@ namespace Wordle_Helper
 			string key = e.Key.ToString();
 
 			//If all words are entered don't run key events
-			if (maxRow == position.row)
+			if (maxRow <= position.row + 1)
 				return;
 
 			//handle enter and backspace
 			if ("Return" == key)
 			{
-				RunRow(sender, e);
+				RunRow();
 			}
 			if ("Back" == key)
 			{
@@ -584,7 +613,7 @@ namespace Wordle_Helper
 				btn.Visibility = Visibility.Collapsed;
 			}
 			SubmitButtons[0].Visibility = Visibility.Visible;
-			EnableSuggest();
+			TestEnable();
 
 			//Reset wordle_analyzer
 			an.Dispose();

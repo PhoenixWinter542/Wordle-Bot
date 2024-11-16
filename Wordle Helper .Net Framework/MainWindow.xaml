@@ -62,7 +62,7 @@
 			<ColumnDefinition Width="1*" MinWidth="560"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-		<Button Grid.Column="0" Grid.RowSpan="3" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Background="Sienna" Foreground="AntiqueWhite" Content="Reset" Focusable="False" BorderBrush="Sienna" Click="ResetAll"/>
+		<Button Grid.Column="0" Grid.RowSpan="3" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Background="Sienna" Foreground="PeachPuff" Content="Reset" Focusable="False" BorderBrush="Sienna" Click="ResetAll"/>
 		<Grid x:Name="Layout"
 		  Focusable="False"
 		  Grid.Column="1"
@@ -91,7 +91,7 @@
 			<Button x:Name="b2" Content="Submit" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="2" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Background="Sienna" Foreground="BlanchedAlmond" BorderBrush="BurlyWood" Focusable="False"/>
 			<Button x:Name="b3" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="3" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
 			<Button x:Name="b4" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="4" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
-			<Button x:Name="b5" Content="T" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="5" Height="50" Width="70" Visibility="Hidden" Click="RunRow" Focusable="False"/>
+			<Button x:Name="b5" Content="Reset" HorizontalAlignment="Right" Margin="3,3,3,3" VerticalAlignment="Center" Grid.Column="5" Grid.Row="5" Height="50" Width="70" Visibility="Hidden" Click="ResetAll" Focusable="False" Background="Sienna" Foreground="PeachPuff" BorderBrush="SandyBrown"/>
 		</Grid>
 	</Grid>
 </Window>
