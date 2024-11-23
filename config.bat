@@ -1,1 +1,0 @@
-start "" ".\Wordle Helper .Net Framework\bin\Release\Wordle_Helper.Net_Framework.exe.config"
