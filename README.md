@@ -5,10 +5,10 @@ You can find lists of english words here:
 - [All english words (Not all words are accepted by wordle)](https://github.com/dwyl/english-words)  
 - [Scrabble words](https://boardgames.stackexchange.com/questions/38366/latest-collins-scrabble-words-list-in-text-file)
 
-Once the database is running you have to edit the app.config in "Wordle Helper .Net Framework/" to point the program to the word column of your database.  
+Once the database is running you have to edit the WordleBot.exe.config file to point the program to the word column of your database.  
  ``` xml
  <connectionStrings>
-	<add name="connection" connectionString="server=DESKTOP-SV6S892;trusted_connection=Yes"/>
+	<add name="connection" connectionString="server=localhost;trusted_connection=Yes"/>
 	<add name="table" connectionString="english.dbo.scrabble"/>
 	<add name="column" connectionString="words"/>
 </connectionStrings>
