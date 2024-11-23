@@ -24,7 +24,7 @@ namespace Word_Analyzer
 		public List<char> bannedLetters;
 		public List<char> reqLetters;
 		public List<(char, short)> bannedPos;
-		public List<(char, short)> reqPos;
+		public List<(char letter, short pos)> reqPos;
 
 		public Analyzer(short length) : this(length, ConfigurationManager.ConnectionStrings["connection"].ConnectionString) { }
 
@@ -131,8 +131,6 @@ namespace Word_Analyzer
 		{
 			if (false == reqLetters.Contains(letter))
 				reqLetters.Add(letter);
-			//Avoid double letter word issues
-			bannedLetters.Remove(letter);
 		}
 
 		public void UpdateLetters(List<(char, short)> feedback)
@@ -145,12 +143,15 @@ namespace Word_Analyzer
 				switch (pos.status)
 				{
 					case 0:
-						if (false == reqLetters.Contains(pos.letter))	//Avoid double letter word issues
+						if (false == bannedLetters.Contains(pos.letter))
 							bannedLetters.Add(pos.letter);
 						break;
 					case 1:
-						bannedPos.Add((pos.letter, i));
-						AddReqLetter(pos.letter);
+						if (false == bannedPos.Contains((pos.letter, i)))
+						{
+							bannedPos.Add((pos.letter, i));
+							AddReqLetter(pos.letter);
+						}
 						break;
 					case 2:
 						if (false == reqPos.Contains((pos.letter, i)))
@@ -212,7 +213,24 @@ namespace Word_Analyzer
 			int sum = 0;
 			foreach (char letter in bannedLetters)
 			{
-				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " LIKE '%" + letter + "%';";
+				//Find any required positions
+				var reqs = reqPos.Where(x => x.letter == letter).ToList();
+				reqs.Sort((x, y) => x.pos.CompareTo(y.pos));
+				int pos = 0;
+				string regex = "";
+				for (int i = 0; i < length; i++)
+				{
+					if (pos >= reqs.Count || i != reqs[pos].pos)
+					{
+						regex += "[^" + letter + "]";
+					}
+					else
+					{
+						regex += letter;
+						pos++;
+					}
+				}
+				cmd.CommandText = "DELETE FROM " + tableString + " WHERE " + columnString + " NOT LIKE '" + regex + "';";
 				sum += cmd.ExecuteNonQuery();
 			}
 			return sum;
